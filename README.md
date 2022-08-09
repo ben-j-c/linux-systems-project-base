@@ -8,6 +8,8 @@ This project is a base project for developing C programs on Linux.
 - Argument parsing boiler-plate
 - hash table and vector data structures
 - Clang format present
+- Tested on GCC 9.4.0
+- ANSI flag compatible
 
 # Future Features
 - More extensive `epoll` boiler-plate
