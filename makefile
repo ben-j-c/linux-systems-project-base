@@ -1,7 +1,7 @@
 CC=gcc
 LN=ln
 INCLUDES= -I ./src/global
-CFLAGS = -Werror -Wextra -Wall -MD -g -O0
+CFLAGS = -Werror -Wextra -Wall -MD -g -O0 -ansi
 LFLAGS = -lutil -ldl -lc -lbsd
 EXE_NAME = ./bin/PROJECT_NAME
 SRC := $(shell find src/ -type f -regex ".*\.c")

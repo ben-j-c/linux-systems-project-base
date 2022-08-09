@@ -14,6 +14,18 @@ static size_t _primes[] = {
     12288011, 24576001, 49152001, 98304053, 196608007, 393216007, 786432001, 1572864001, 3145728023,
 };
 
+#if !(_XOPEN_SOURCE >= 500 || _POSIX_C_SOURCE >= 200809L || _BSD_SOURCE || _SVID_SOURCE)
+char *strdup(const char *c)
+{
+	size_t n  = strlen(c) + 1;
+	char *res = malloc(n);
+	if (res) {
+		memcpy(res, c, n + 1);
+	}
+	return res;
+};
+#endif
+
 typedef struct _node_s
 {
 	ht_st *owner;

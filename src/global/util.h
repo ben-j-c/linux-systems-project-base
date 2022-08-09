@@ -14,21 +14,21 @@
 
 #define MOVE_VZ(Y)                                                                                 \
 	({                                                                                             \
-		typeof(Y) _y = Y;                                                                          \
-		Y            = 0;                                                                          \
+		__typeof__(Y) _y = Y;                                                                      \
+		Y                = 0;                                                                      \
 		_y;                                                                                        \
 	})
 
 #define MOVE_VN(Y)                                                                                 \
 	({                                                                                             \
-		typeof(Y) _y = Y;                                                                          \
-		Y            = -1;                                                                         \
+		__typeof__(Y) _y = Y;                                                                      \
+		Y                = -1;                                                                     \
 		_y;                                                                                        \
 	})
 #define MOVE_PZ(Y)                                                                                 \
 	({                                                                                             \
-		typeof(Y) _y = Y;                                                                          \
-		Y            = NULL;                                                                       \
+		__typeof__(Y) _y = Y;                                                                      \
+		Y                = NULL;                                                                   \
 		_y;                                                                                        \
 	})
 
