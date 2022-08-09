@@ -1,0 +1,45 @@
+BasedOnStyle: Google
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: false
+AlignConsecutiveMacros: true
+AlignEscapedNewlines: Right
+AlignOperands: true
+AlignTrailingComments: false
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+BinPackArguments: false
+BinPackParameters: false
+BreakBeforeBraces: Custom
+BraceWrapping:
+    AfterEnum: true
+    AfterStruct: true
+    AfterUnion: true
+    AfterFunction: true
+    AfterExternBlock: false
+    AfterCaseLabel: false
+    AfterControlStatement: Never
+    BeforeElse: false
+    SplitEmptyFunction: false
+    SplitEmptyRecord: false
+BreakBeforeTernaryOperators: false
+ColumnLimit: 100
+ContinuationIndentWidth: 4
+DerivePointerAlignment: false
+ForEachMacros: []
+
+IndentCaseLabels: false
+IndentPPDirectives: AfterHash
+IndentWidth: 4
+IndentGotoLabels: false
+KeepEmptyLinesAtTheStartOfBlocks: true
+MaxEmptyLinesToKeep: 1
+PenaltyBreakBeforeFirstCallParameter: 0
+PointerAlignment: Right
+SpaceAfterCStyleCast: true
+TabWidth: 4
+UseTab: ForIndentation
