@@ -1,4 +1,13 @@
 #pragma once
+/**
+ * Copyright by Benjamin Joseph Correia.
+ * Date: 2022-08-11
+ * License: MIT
+ *
+ * Description:
+ * This is a utilities file. It defines several useful defines that leverage language features and
+ * GCC specific features.
+ */
 #include <bsd/string.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -12,19 +21,21 @@
 #define CONCAT_(A, B) A##B
 #define CONCAT(A, B)  CONCAT_(A, B)
 
+/*Move a value from Y to rvalue, Y will be zeroed. Useful for cleanup functions.*/
 #define MOVE_VZ(Y)                                                                                 \
 	({                                                                                             \
 		__typeof__(Y) _y = Y;                                                                      \
 		Y                = 0;                                                                      \
 		_y;                                                                                        \
 	})
-
+/*Move a value from Y to rvalue, Y will be set to -1. Useful for cleanup functions.*/
 #define MOVE_VN(Y)                                                                                 \
 	({                                                                                             \
 		__typeof__(Y) _y = Y;                                                                      \
 		Y                = -1;                                                                     \
 		_y;                                                                                        \
 	})
+/*Move a pointer from Y to rvalue, Y will be NULL. Useful for cleanup functions.*/
 #define MOVE_PZ(Y)                                                                                 \
 	({                                                                                             \
 		__typeof__(Y) _y = Y;                                                                      \

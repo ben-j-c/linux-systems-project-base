@@ -10,6 +10,9 @@ This project is a base project for developing C programs on Linux.
 - Clang format present
 - Tested on GCC 9.4.0
 - ANSI flag compatible
+- Multi-threaded epoll
 
 # Future Features
-- More extensive `epoll` boiler-plate
+- Shared memory tools
+- Memory backed files tools
+- IPC tools

@@ -62,11 +62,11 @@ int ht_alloc(ht_st **dst,
              ht_free_func_t value_free)
 {
 	CLEANUP(ht_free) ht_st *tmp;
-	ES_ERR_ASRT_NM(dst);
+	ES_NEW_ASRT_NM(dst);
 	*dst = NULL;
-	ES_ERR_ASRT_NM(hash && cmp);
-	ES_ERR_ASRT_NM(tmp = calloc(1, sizeof(ht_st)));
-	ES_ERR_ASRT_NM(tmp->nodes = calloc(_primes[0], sizeof(_node_t *)));
+	ES_NEW_ASRT_NM(hash && cmp);
+	ES_NEW_ASRT_NM(tmp = calloc(1, sizeof(ht_st)));
+	ES_NEW_ASRT_NM(tmp->nodes = calloc(_primes[0], sizeof(_node_t *)));
 	tmp->hash       = hash;
 	tmp->cmp        = cmp;
 	tmp->key_size   = key_size;
@@ -171,20 +171,20 @@ void _adjust_by_density(ht_st *ht)
 int _new_node(_node_t **cur_node, ht_st *ht, void *key, void *value)
 {
 	CLEANUP(_cleanup_node) _node_t *tmp = NULL;
-	ES_ERR_ASRT_NM(tmp = calloc(1, sizeof(*tmp)));
+	ES_NEW_ASRT_NM(tmp = calloc(1, sizeof(*tmp)));
 	if (ht->key_copy) {
-		ES_ERR_INT_NM(ht->key_copy(&tmp->key, key));
+		ES_NEW_INT_NM(ht->key_copy(&tmp->key, key));
 	} else if (ht->key_size) {
-		ES_ERR_ASRT_NM(tmp->key = malloc(ht->key_size));
+		ES_NEW_ASRT_NM(tmp->key = malloc(ht->key_size));
 		memcpy(tmp->key, key, ht->key_size);
 	} else {
 		tmp->key = key;
 	}
 
 	if (ht->value_copy) {
-		ES_PUSH_INT_NM(ht->value_copy(&tmp->value, value));
+		ES_FWD_INT_NM(ht->value_copy(&tmp->value, value));
 	} else if (ht->value_size) {
-		ES_ERR_ASRT_NM(tmp->value = malloc(ht->value_size));
+		ES_NEW_ASRT_NM(tmp->value = malloc(ht->value_size));
 		memcpy(tmp->value, value, ht->value_size);
 	} else {
 		tmp->value = value;
@@ -200,10 +200,10 @@ int ht_set(ht_st *ht, void *key, void *value)
 {
 	_node_t **head = NULL;
 	int new_node   = false;
-	ES_ERR_ASRT_NM(ht);
+	ES_NEW_ASRT_NM(ht);
 	head     = _find_node(ht, key);
 	new_node = !*head;
-	ES_ERR_INT_NM(_new_node(head, ht, key, value));
+	ES_NEW_INT_NM(_new_node(head, ht, key, value));
 	if (new_node)
 		_adjust_by_density(ht);
 	return new_node;
@@ -253,14 +253,14 @@ int ht_foreach(ht_st *ht, ht_foreach_func_t body, void *data)
 {
 	size_t i;
 
-	ES_ERR_ASRT_NM(ht);
+	ES_NEW_ASRT_NM(ht);
 	for (i = 0; i < ht_buckets(ht); i++) {
 		_node_t **head = &(ht->nodes[i]);
 		while (*head) {
 			int ret;
 			_node_t *post;
 			_node_t *pre = *head;
-			ES_ERR_INT_NM(ret = body(ht, (*head)->key, (*head)->value, data));
+			ES_NEW_INT_NM(ret = body(ht, (*head)->key, (*head)->value, data));
 			post = *head;
 			if (ret == 0)
 				return 0;
@@ -324,7 +324,7 @@ int ht_str_copy(void **dst, void *key)
 		return 1;
 	}
 	char *new_key = strdup((char *) key);
-	ES_ERR_ASRT_NM(new_key);
+	ES_NEW_ASRT_NM(new_key);
 	*dst = new_key;
 	return 1;
 }

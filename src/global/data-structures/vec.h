@@ -10,7 +10,7 @@ typedef struct vec_s vec_t;
 
 int vec_alloc(vec_t **vec, size_t elm_size);
 void vec_cleanup(vec_t **vec);
-int vec_push_back(vec_t *vec, const void *data);
+int vec_FWD_back(vec_t *vec, const void *data);
 int vec_emplace_back(vec_t *vec, void **data);
 int vec_pop_back(vec_t *vec);
 void *vec_back(vec_t *vec);

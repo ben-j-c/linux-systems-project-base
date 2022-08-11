@@ -10,7 +10,7 @@ static error_t _parse_opt_x(UNUSED int key, char *arg, struct argp_state *state)
 {
 	struct arg_spec_s *spec = state->input;
 	if (!spec) {
-		ES_ERR_NM();
+		ES_NEW_NM();
 		return ENOTRECOVERABLE;
 	}
 	if (arg) {
@@ -18,7 +18,7 @@ static error_t _parse_opt_x(UNUSED int key, char *arg, struct argp_state *state)
 	} else if (state->next < state->argc) {
 		STRLCPY(spec->example_arg, state->argv[state->next++]);
 	} else {
-		ES_ERR("Argument for -x not present");
+		ES_NEW("Argument for -x not present");
 		return ENOTRECOVERABLE;
 	}
 	return 0;
@@ -95,6 +95,6 @@ int process_args(struct arg_spec_s *dst, int argc, char **argv)
 	    .parser   = _parse_opt,
 	};
 	error_t retval = argp_parse(&spec, argc, argv, 0, NULL, dst);
-	ES_PUSH_ASRT(retval == 0, "Error parsing arguments %d(%s)", retval, strerror(retval));
+	ES_FWD_ASRT(retval == 0, "Error parsing arguments %d(%s)", retval, strerror(retval));
 	return 0;
 }

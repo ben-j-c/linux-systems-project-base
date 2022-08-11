@@ -16,8 +16,8 @@ int vec_alloc(vec_t **vec, size_t elm_size)
 {
 	vec_t *tmp;
 	*vec = NULL;
-	ES_ERR_ASRT_NM(tmp = calloc(1, sizeof(vec_t)));
-	ES_ERR_ASRT_NM(tmp->data = calloc(1, elm_size));
+	ES_NEW_ASRT_NM(tmp = calloc(1, sizeof(vec_t)));
+	ES_NEW_ASRT_NM(tmp->data = calloc(1, elm_size));
 	tmp->elm_size = elm_size;
 	tmp->capacity = 1;
 	tmp->size     = 0;
@@ -41,13 +41,13 @@ void vec_cleanup(vec_t **vec)
 		if (vec->capacity == vec->size) {                                                          \
 			size_t new_cap = vec->capacity * 2;                                                    \
 			void *tmp      = realloc(vec->data, new_cap * vec->elm_size);                          \
-			ES_ERR_ASRT_NM(tmp);                                                                   \
+			ES_NEW_ASRT_NM(tmp);                                                                   \
 			vec->data     = tmp;                                                                   \
 			vec->capacity = new_cap;                                                               \
 		}                                                                                          \
 	})
 
-int vec_push_back(vec_t *vec, const void *data)
+int vec_FWD_back(vec_t *vec, const void *data)
 {
 	_upsize_check();
 	memcpy(vec->data + vec->elm_size * vec->size, data, vec->elm_size);
@@ -69,7 +69,7 @@ int vec_pop_back(vec_t *vec)
 	if (vec->capacity / 4 > vec->size) {
 		size_t new_cap = vec->capacity / 2;
 		void *tmp      = realloc(vec->data, new_cap * vec->elm_size);
-		ES_ERR_ASRT_NM(tmp);
+		ES_NEW_ASRT_NM(tmp);
 		vec->data     = tmp;
 		vec->capacity = new_cap;
 	}
@@ -111,7 +111,7 @@ int vec_foreach(vec_t *vec,
 
 	for (i = 0; i < vec_size(vec); i++) {
 		int ret = 0;
-		ES_PUSH_INT_NM(ret = each(vec, i, vec_at(vec, i), arg_vp));
+		ES_FWD_INT_NM(ret = each(vec, i, vec_at(vec, i), arg_vp));
 		if (ret == 0) {
 			return 0;
 		}

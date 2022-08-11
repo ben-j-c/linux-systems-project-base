@@ -1,7 +1,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <pty.h>
-#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,9 +30,27 @@ static int _event_loop(struct prog_state_s *state, struct arg_spec_s *args)
 {
 	printf("Arg given %s\n", args->example_arg);
 	for (;;) {
-		ES_PUSH_INT_NM(eh_ctx_wait(state->epoll_ctx, 100, 10));
+		ES_FWD_INT_NM(eh_ctx_wait(state->epoll_ctx, 100, 10));
 	}
 	return 0;
+}
+
+int _some_fun2(void)
+{
+	ES_NEW("Some other error");
+	return -1;
+}
+
+int _some_fun1(void)
+{
+	ES_FWD_INT(_some_fun2(), "Some other error");
+	return 1;
+}
+
+int _some_fun(void)
+{
+	ES_FWD_INT(_some_fun1(), "Some other error");
+	return 1;
 }
 
 static int _on_stdin(UNUSED eh_ctx_st *ctx, eh_hook_st *hook, UNUSED bool ops[EH_OPS_MAX])
@@ -45,11 +62,14 @@ static int _on_stdin(UNUSED eh_ctx_st *ctx, eh_hook_st *hook, UNUSED bool ops[EH
 	}
 	n_read = read(eh_hook_get_fd(hook), buff, sizeof(buff));
 	if (n_read < 0 && errno != EWOULDBLOCK) {
-		ES_ERR_ASRT_ERRNO(n_read);
+		ES_NEW_ASRT_ERRNO(n_read);
 	}
 	if (n_read > 0) {
 		buff[n_read] = '\0';
 		printf("Got values: %s\n", buff);
+	}
+	if (_some_fun() < 0) {
+		ES_PRINT();
 	}
 	return 1;
 }
@@ -59,23 +79,23 @@ static int _pipeline(int argc, char **argv)
 	puts("starting pipeline");
 	struct arg_spec_s args                            = {};
 	CLEANUP(_state_cleanup) struct prog_state_s state = {};
-	ES_PUSH_INT(process_args(&args, argc, argv), "Failed to process args.");
-	ES_PUSH_INT(eh_ctx_alloc(&state.epoll_ctx, false), "Failed to allocate new epoll context");
-	ES_ERR_INT_ERRNO(fcntl(0, F_SETFD, ES_ERR_INT_ERRNO(fcntl(0, F_GETFD) | O_NONBLOCK)));
-	ES_PUSH_INT(eh_ctx_hook_alloc(state.epoll_ctx,
-	                              0,
-	                              NULL,
-	                              (eh_ops_mapping_st[]){
-	                                  {
-	                                      .fn = _on_stdin,
-	                                      .op = EH_OPS_ALL,
-	                                  },
-	                                  {
-	                                      .op = EH_OPS_END,
-	                                  },
-	                              }),
-	            "Failed to make stdin hook");
-	ES_PUSH_INT(_event_loop(&state, &args), "Failure in event loop.");
+	ES_FWD_INT(process_args(&args, argc, argv), "Failed to process args.");
+	ES_FWD_INT(eh_ctx_alloc(&state.epoll_ctx, false), "Failed to allocate new epoll context");
+	ES_NEW_INT_ERRNO(fcntl(0, F_SETFD, ES_NEW_INT_ERRNO(fcntl(0, F_GETFD) | O_NONBLOCK)));
+	ES_FWD_INT(eh_ctx_hook_alloc(state.epoll_ctx,
+	                             0,
+	                             NULL,
+	                             (eh_ops_mapping_st[]){
+	                                 {
+	                                     .fn = _on_stdin,
+	                                     .op = EH_OPS_ALL,
+	                                 },
+	                                 {
+	                                     .op = EH_OPS_END,
+	                                 },
+	                             }),
+	           "Failed to make stdin hook");
+	ES_FWD_INT(_event_loop(&state, &args), "Failure in event loop.");
 	return 0;
 }
 
@@ -86,7 +106,9 @@ int main(int argc, char **argv)
 	retval = _pipeline(argc, argv);
 	if (retval < 0) {
 		ES_PUSH("Pipeline failed");
-		printf("Unrecoverable: [ %s\n ]\n", ES_DUMP());
+		printf("Unrecoverable: [ ");
+		ES_PRINT();
+		printf("\n ]\n");
 		return -1;
 	}
 	return 0;
