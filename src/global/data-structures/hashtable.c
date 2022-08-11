@@ -248,19 +248,25 @@ void ht_delete(ht_st *ht, void *key)
 	return;
 }
 
-int ht_foreach(ht_st *ht, ht_foreach_func_t body)
+/* Self deletion safe. NOT arbitrary deletion safe.*/
+int ht_foreach(ht_st *ht, ht_foreach_func_t body, void *data)
 {
 	size_t i;
 
 	ES_ERR_ASRT_NM(ht);
 	for (i = 0; i < ht_buckets(ht); i++) {
-		_node_t *head = ht->nodes[i];
-		while (head) {
+		_node_t **head = &(ht->nodes[i]);
+		while (*head) {
 			int ret;
-			ES_ERR_INT_NM(ret = body(ht, head->key, head->value));
+			_node_t *post;
+			_node_t *pre = *head;
+			ES_ERR_INT_NM(ret = body(ht, (*head)->key, (*head)->value, data));
+			post = *head;
 			if (ret == 0)
 				return 0;
-			head = head->next;
+			/* Case when body didn't delete the iterated node*/
+			if (pre == post)
+				head = &(*head)->next;
 		}
 	}
 	return 1;
