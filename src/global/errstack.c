@@ -8,9 +8,10 @@
 #include <sys/sendfile.h>
 #include <unistd.h>
 
+#include "util.h"
+
 __thread ssize_t es_bytes = 0;
 __thread int es_fd        = -1;
-__thread FILE *es_file    = NULL;
 
 __thread char es_error_stack[1 << 16] = {0};
 __thread char *es_end                 = NULL;
@@ -32,13 +33,7 @@ static void _append(const char *format, va_list args)
 			return;
 		}
 	}
-	if (es_file == NULL) {
-		es_file = fdopen(es_fd, "a+");
-		if (es_file == NULL) {
-			return;
-		}
-	}
-	n_bytes = vfprintf(es_file, format, args);
+	n_bytes = vdprintf(es_fd, format, args);
 	if (n_bytes > 0) {
 		es_bytes += n_bytes;
 	}
@@ -58,25 +53,17 @@ static void _append(const char *format, va_list args)
 
 void es_reset(void)
 {
-	int i;
-	if (es_file == NULL || es_bytes == 0) {
+	int ret;
+	if (es_bytes == 0) {
 		return;
 	}
-	for (i = 0; i < 5; i++) {
-		int ret = ftruncate(es_fd, 0);
-		if (ret < 0 && errno != EINTR) {
-			fclose(es_file);
-			es_file = NULL;
-			es_fd   = -1;
-			return;
-		} else if (ret < 0) {
-			break;
-		}
-	}
-	if (i == 5) {
-		fclose(es_file);
-		es_file = NULL;
-		es_fd   = -1;
+again:
+	ret = ftruncate(es_fd, 0);
+	if (ret < 0 && errno != EINTR) {
+		es_fd = -1;
+		return;
+	} else if (ret < 0) {
+		goto again;
 	}
 
 	/*es_start          = es_error_stack;
@@ -98,6 +85,35 @@ const char *es_dump(void)
 
 void es_print(void)
 {
-	sendfile(STDOUT_FILENO, es_fd, 0, es_bytes);
+	char buff[1 << 10];
+	ssize_t ret;
+	lseek(es_fd, 0, SEEK_SET);
+	while (es_bytes > 0) {
+		const ssize_t expected = MIN((ssize_t) sizeof(buff), es_bytes);
+		ssize_t n_bytes;
+again:
+		n_bytes = read(es_fd, buff, expected);
+		if (n_bytes < 0) {
+			if (errno == EINTR) {
+				goto again;
+			}
+			if (errno == EAGAIN) {
+				return;
+			}
+again2:
+			ret = close(es_fd);
+			if (ret < 0 && errno == EINTR) {
+				goto again2;
+			}
+			es_fd = -1;
+			return;
+		}
+again3:
+		ret = write(STDOUT_FILENO, buff, n_bytes);
+		if (ret < 0 && errno == EINTR) {
+			goto again3;
+		}
+		es_bytes -= expected;
+	}
 	return;
 }

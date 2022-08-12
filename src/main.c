@@ -55,21 +55,20 @@ int _some_fun(void)
 
 static int _on_stdin(UNUSED eh_ctx_st *ctx, eh_hook_st *hook, UNUSED bool ops[EH_OPS_MAX])
 {
-	int n_read            = 0;
+	ssize_t n_read        = 0;
 	char buff[BIG_BUF_SZ] = {};
 	if (!ops[EH_OPS_IN]) {
 		return 1;
 	}
-	n_read = read(eh_hook_get_fd(hook), buff, sizeof(buff));
-	if (n_read < 0 && errno != EWOULDBLOCK) {
-		ES_NEW_ASRT_ERRNO(n_read);
-	}
-	if (n_read > 0) {
+	while ((n_read = read(eh_hook_get_fd(hook), buff, sizeof(buff))) > 0) {
 		buff[n_read] = '\0';
 		printf("Got values: %s\n", buff);
-	}
-	if (_some_fun() < 0) {
-		ES_PRINT();
+		if (_some_fun() < 0) {
+			ES_PRINT();
+		}
+	};
+	if (n_read < 0 && errno != EWOULDBLOCK) {
+		ES_NEW_ASRT_ERRNO(n_read);
 	}
 	return 1;
 }
@@ -82,7 +81,11 @@ static int _pipeline(int argc, char **argv)
 	ES_FWD_INT(process_args(&args, argc, argv), "Failed to process args.");
 	ES_FWD_INT(eh_ctx_alloc(&state.epoll_ctx, false, false),
 	           "Failed to allocate new epoll context");
-	ES_NEW_INT_ERRNO(fcntl(0, F_SETFD, ES_NEW_INT_ERRNO(fcntl(0, F_GETFD) | O_NONBLOCK)));
+	ES_NEW_INT_ERRNO(
+	    fcntl(STDIN_FILENO, F_SETFD, ES_NEW_INT_ERRNO(fcntl(STDIN_FILENO, F_GETFD) | O_NONBLOCK)));
+	ES_NEW_INT_ERRNO(fcntl(STDOUT_FILENO,
+	                       F_SETFD,
+	                       ES_NEW_INT_ERRNO(fcntl(STDOUT_FILENO, F_GETFD) | O_NONBLOCK)));
 	ES_FWD_INT(eh_ctx_hook_alloc(state.epoll_ctx,
 	                             0,
 	                             NULL,

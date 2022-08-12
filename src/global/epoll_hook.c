@@ -63,7 +63,7 @@ static uint32_t _get_epoll_flags(const eh_hook_st *hook, eh_ops_et new_op)
 	uint32_t flags = 0;
 	size_t i;
 	for (i = 0; i < EH_OPS_MAX; i++) {
-		if (hook->ops[i] || new_op == i) {
+		if (hook->ops[i] || (size_t) new_op == i) {
 			flags |= _eh_op_to_epoll_define(i);
 		}
 	}

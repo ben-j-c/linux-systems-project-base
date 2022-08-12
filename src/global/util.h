@@ -21,6 +21,20 @@
 #define CONCAT_(A, B) A##B
 #define CONCAT(A, B)  CONCAT_(A, B)
 
+#define MIN(A, B)                                                                                  \
+	({                                                                                             \
+		__typeof__(A) _a = A;                                                                      \
+		__typeof__(B) _b = B;                                                                      \
+		_a < _b ? _a : _b;                                                                         \
+	})
+
+#define MAX(A, B)                                                                                  \
+	({                                                                                             \
+		__typeof__(A) _a = A;                                                                      \
+		__typeof__(B) _b = B;                                                                      \
+		_a > _b ? _a : _b;                                                                         \
+	})
+
 /*Move a value from Y to rvalue, Y will be zeroed. Useful for cleanup functions.*/
 #define MOVE_VZ(Y)                                                                                 \
 	({                                                                                             \
