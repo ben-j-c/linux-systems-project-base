@@ -2,7 +2,6 @@
 #include <errno.h>
 
 void es_append(const char *format, ...);
-const char *es_dump(void);
 void es_reset(void);
 void es_print(void);
 
@@ -100,8 +99,6 @@ void es_print(void);
 #define ES_NEW_ASRT_ERRNO(statement) ES_NEW_ASRT(statement, "errno %d: %s", errno, strerror(errno))
 #define ES_FWD_ASRT_ERRNO(statement) ES_FWD_ASRT(statement, "errno %d: %s", errno, strerror(errno))
 #define ES_NEW_ERRNO()               ES_NEW("errno %d: %s", errno, strerror(errno))
-
-#define ES_DUMP() ({ es_dump(); })
 
 #define ES_PRINT() ({ es_print(); })
 
