@@ -137,4 +137,5 @@ void *vec_take_data(vec_t *vec, size_t *size, size_t *capacity)
 		*capacity = vec->capacity;
 	}
 	free(vec);
+	return data;
 }

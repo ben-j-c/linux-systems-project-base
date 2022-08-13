@@ -244,7 +244,9 @@ void **ht_emplace(ht_st *ht, void *key)
 {
 	_node_t **head = NULL;
 	int new_node   = false;
-	ES_NEW_ASRT_NM(ht);
+	if (!ht) {
+		return NULL;
+	}
 	head     = _find_node(ht, key);
 	new_node = !*head;
 	if (_new_node(head, ht, key, NULL) < 0) {
