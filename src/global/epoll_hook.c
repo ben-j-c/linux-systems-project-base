@@ -149,7 +149,8 @@ int eh_ctx_reg_hook(eh_ctx_st *ctx, eh_hook_st *hook)
 {
 	struct epoll_event to_add = {};
 	ES_NEW_ASRT_NM(ctx);
-	ES_NEW_ASRT_NM(hook);
+	ES_NEW_ASRT_NM(hook && hook->owner == NULL);
+	ES_NEW_ASRT_NM(!ht_int_get(ctx->hooks, hook->fd));
 	hook->owner     = ctx;
 	to_add.data.ptr = hook;
 	to_add.events   = _get_epoll_flags(hook, EH_OPS_END);
@@ -201,10 +202,11 @@ void eh_ctx_cleanup(eh_ctx_st **dst)
 
 int eh_ctx_hook_alloc(eh_ctx_st *ctx, int fd, void *data, const struct eh_ops_mapping_s ops[])
 {
-	eh_hook_st *hook = NULL;
+	CLEANUP(eh_hook_cleanup) eh_hook_st *hook = NULL;
 	ES_NEW_ASRT_NM(ctx);
 	ES_FWD_INT_NM(eh_hook_alloc(&hook, fd, data, ops));
 	ES_FWD_INT_NM(eh_ctx_reg_hook(ctx, hook));
+	hook = NULL;
 	return 0;
 }
 

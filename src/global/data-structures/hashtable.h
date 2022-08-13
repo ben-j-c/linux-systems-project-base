@@ -1,4 +1,12 @@
 #pragma once
+/**
+ * Copyright by Benjamin Joseph Correia.
+ * Date: 2022-08-11
+ * License: MIT
+ *
+ * Description:
+ * This is an implementation for a hashtable.
+ */
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -26,7 +34,8 @@ typedef int (*ht_foreach_func_t)(const ht_st *ht, void *key, void *value, void *
  * @param key_free How to free fresh copies of the key (always called if exists)
  * @param value_size Size of value to be allocated (0 means no allocation is made, ptr value is
  * copied)
- * @param value_copy How to copy data when setting a new k/v pair (if exists, value_size is ignored)
+ * @param value_copy How to copy data when setting a new k/v pair (if exists, value_size is
+ * ignored). Must be able to handle NULL inputs if ht_emplace is needed.
  * @param value_free How to free fresh copies of the value (always called if exists)
  *
  * @returns negative on failure, 0 or positive on success
@@ -44,6 +53,7 @@ void ht_free(ht_st **to_free);
 void ht_purge(ht_st *ht);
 
 int ht_set(ht_st *ht, void *key, void *value);
+void **ht_emplace(ht_st *ht, void *key);
 void *ht_get(ht_st *ht, void *key);
 WARN_UNUSED void *ht_take(ht_st *ht, void *key);
 void ht_delete(ht_st *ht, void *key);

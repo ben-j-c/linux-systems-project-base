@@ -1,4 +1,12 @@
 #include "hashtable.h"
+/**
+ * Copyright by Benjamin Joseph Correia.
+ * Date: 2022-08-11
+ * License: MIT
+ *
+ * Description:
+ * This is an implementation for a hashtable.
+ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -80,28 +88,37 @@ int ht_alloc(ht_st **dst,
 	return 1;
 }
 
-void _cleanup_node_util(_node_t **tmp, bool skip_value)
+static void _cleanup_node_key(_node_t **tmp)
 {
-	if (!*tmp)
-		return;
-
 	if ((*tmp)->owner->key_free)
 		(*tmp)->owner->key_free((*tmp)->key);
 	else if ((*tmp)->owner->key_size)
 		free((*tmp)->key);
+}
 
+static void _cleanup_node_value(_node_t **tmp)
+{
+	if ((*tmp)->owner->value_free)
+		(*tmp)->owner->value_free((*tmp)->value);
+	else if ((*tmp)->owner->value_size)
+		free((*tmp)->value);
+}
+
+static void _cleanup_node_util(_node_t **tmp, bool skip_value)
+{
+	if (!*tmp)
+		return;
+
+	_cleanup_node_key(tmp);
 	if (!skip_value) {
-		if ((*tmp)->owner->value_free)
-			(*tmp)->owner->value_free((*tmp)->value);
-		else if ((*tmp)->owner->value_size)
-			free((*tmp)->value);
+		_cleanup_node_value(tmp);
 	}
 
 	(*tmp)->owner->n_nodes--;
 	free(*tmp);
 }
 
-void _cleanup_node(_node_t **tmp)
+static void _cleanup_node(_node_t **tmp)
 {
 	_cleanup_node_util(tmp, false);
 }
@@ -122,7 +139,10 @@ void ht_purge(ht_st *ht)
 void ht_free(ht_st **to_free)
 {
 	if (to_free && *to_free) {
-		ht_purge(*to_free);
+		if ((*to_free)->nodes) {
+			ht_purge(*to_free);
+			free((*to_free)->nodes);
+		}
 		free(*to_free);
 		*to_free = NULL;
 	}
@@ -171,28 +191,32 @@ void _adjust_by_density(ht_st *ht)
 int _new_node(_node_t **cur_node, ht_st *ht, void *key, void *value)
 {
 	CLEANUP(_cleanup_node) _node_t *tmp = NULL;
-	ES_NEW_ASRT_NM(tmp = calloc(1, sizeof(*tmp)));
-	if (ht->key_copy) {
-		ES_NEW_INT_NM(ht->key_copy(&tmp->key, key));
-	} else if (ht->key_size) {
-		ES_NEW_ASRT_NM(tmp->key = malloc(ht->key_size));
-		memcpy(tmp->key, key, ht->key_size);
+	if (*cur_node) {
+		tmp = *cur_node;
+		_cleanup_node_value(cur_node);
 	} else {
-		tmp->key = key;
+		ES_NEW_ASRT_NM(tmp = calloc(1, sizeof(*tmp)));
+		if (ht->key_copy) {
+			ES_NEW_INT_NM(ht->key_copy(&tmp->key, key));
+		} else if (ht->key_size) {
+			ES_NEW_ASRT_NM(tmp->key = malloc(ht->key_size));
+			memcpy(tmp->key, key, ht->key_size);
+		} else {
+			tmp->key = key;
+		}
 	}
-
 	if (ht->value_copy) {
 		ES_FWD_INT_NM(ht->value_copy(&tmp->value, value));
-	} else if (ht->value_size) {
+	} else if (ht->value_size && value != NULL) {
+		/*NULL can't be copied but is still a valid mapping*/
 		ES_NEW_ASRT_NM(tmp->value = malloc(ht->value_size));
 		memcpy(tmp->value, value, ht->value_size);
 	} else {
 		tmp->value = value;
 	}
-
-	_cleanup_node(cur_node);
-	*cur_node = MOVE_PZ(tmp);
-	ht->n_nodes++;
+	*cur_node          = MOVE_PZ(tmp);
+	(*cur_node)->owner = ht;
+	(*cur_node)->owner->n_nodes++;
 	return 1;
 }
 
@@ -207,6 +231,28 @@ int ht_set(ht_st *ht, void *key, void *value)
 	if (new_node)
 		_adjust_by_density(ht);
 	return new_node;
+}
+
+/**
+ * Expose the underlying value pointer for the given key. This value will follow the same semantics
+ * as all other values. User must obey freeing semantics. i.e., value created must be safe to pass
+ * to `value_free` if applicable, else must be able to `free` it if applicable, else always safe.
+ *
+ * @returns a pointer to the value in the k/v pair. NULL on allocation failure.
+ */
+void **ht_emplace(ht_st *ht, void *key)
+{
+	_node_t **head = NULL;
+	int new_node   = false;
+	ES_NEW_ASRT_NM(ht);
+	head     = _find_node(ht, key);
+	new_node = !*head;
+	if (_new_node(head, ht, key, NULL) < 0) {
+		return NULL;
+	}
+	if (new_node)
+		_adjust_by_density(ht);
+	return &(*head)->value;
 }
 
 void *ht_get(ht_st *ht, void *key)

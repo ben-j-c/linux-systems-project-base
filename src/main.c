@@ -1,3 +1,12 @@
+/**
+ * Copyright by Benjamin Joseph Correia.
+ * Date: 2022-08-11
+ * License: MIT
+ *
+ * Description:
+ * This is a barebones project file to allow for quick development of a daemon or CLI tool in C.
+ */
+
 #include <errno.h>
 #include <fcntl.h>
 #include <pty.h>
@@ -109,7 +118,7 @@ int main(int argc, char **argv)
 	/* Execute program */
 	retval = _pipeline(argc, argv);
 	if (retval < 0) {
-		ES_PUSH("Pipeline failed");
+		ES_FWD("Pipeline failed");
 		printf("Unrecoverable: [ ");
 		ES_PRINT();
 		printf("\n ]\n");

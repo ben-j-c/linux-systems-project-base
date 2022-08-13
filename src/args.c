@@ -1,4 +1,12 @@
 #include "args.h"
+/**
+ * Copyright by Benjamin Joseph Correia.
+ * Date: 2022-08-11
+ * License: MIT
+ *
+ * Description:
+ * This is a barebones implementation for an argument parser with one example option.
+ */
 
 #include <argp.h>
 #include <errno.h>
@@ -50,8 +58,7 @@ static error_t _parse_opt(int key, char *arg, struct argp_state *state)
 		for (i = 0; i < ARRAY_SIZE(opt_on_end_func); i++) {
 			retval = opt_on_end_func[i](state);
 			if (retval != 0) {
-				ES_PUSH("Failed to run argument process ending function.");
-				return retval;
+				ES_FWD("Failed to run argument process ending function.");
 			}
 		}
 		break;
@@ -71,7 +78,7 @@ static error_t _parse_opt(int key, char *arg, struct argp_state *state)
 		}
 		retval = opt_func[key](key, arg, state);
 		if (retval != 0) {
-			ES_PUSH("Failed to run argument process function.");
+			ES_FWD("Failed to run argument process function.");
 		}
 	}
 	return retval;

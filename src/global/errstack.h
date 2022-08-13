@@ -1,4 +1,13 @@
 #pragma once
+/**
+ * Copyright by Benjamin Joseph Correia.
+ * Date: 2022-08-11
+ * License: MIT
+ *
+ * Description:
+ * This is an implementation for an error logging system.
+ */
+
 #include <errno.h>
 
 void es_append(const char *format, ...);
@@ -60,7 +69,7 @@ void es_print(void);
 		})
 
 /* Push message */
-#	define ES_PUSH(fmt, args...)                                                                  \
+#	define ES_FWD(fmt, args...)                                                                   \
 		({ es_append("\n    (%d @ %s:%d \"" fmt "\" )", -1, __FUNCTION__, __LINE__, ##args); })
 
 #else
@@ -92,7 +101,7 @@ void es_print(void);
 #define ES_NEW_ASRT_NM(statement) ES_NEW_ASRT(statement, "")
 #define ES_FWD_ASRT_NM(statement) ES_FWD_ASRT(statement, "")
 #define ES_NEW_NM()               ES_NEW("")
-#define ES_FWD_NM()               ES_PUSH("")
+#define ES_FWD_NM()               ES_FWD("")
 
 #define ES_NEW_INT_ERRNO(statement)  ES_NEW_INT(statement, "errno %d: %s", errno, strerror(errno))
 #define ES_FWD_INT_ERRNO(statement)  ES_FWD_INT(statement, "errno %d: %s", errno, strerror(errno))

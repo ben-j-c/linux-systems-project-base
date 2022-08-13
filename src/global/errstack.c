@@ -1,5 +1,13 @@
 #define _GNU_SOURCE
 #include "errstack.h"
+/**
+ * Copyright by Benjamin Joseph Correia.
+ * Date: 2022-08-11
+ * License: MIT
+ *
+ * Description:
+ * This is an implementation for an error logging system.
+ */
 
 #include <bsd/string.h>
 #include <stdarg.h>

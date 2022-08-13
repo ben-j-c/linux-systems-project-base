@@ -1,4 +1,13 @@
 #pragma once
+/**
+ * Copyright by Benjamin Joseph Correia.
+ * Date: 2022-08-11
+ * License: MIT
+ *
+ * Description:
+ * This is a barebones implementation for an argument parser with one example option.
+ */
+
 #include "util.h"
 
 struct arg_spec_s

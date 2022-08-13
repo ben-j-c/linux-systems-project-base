@@ -1,4 +1,12 @@
 #include "vec.h"
+/**
+ * Copyright by Benjamin Joseph Correia.
+ * Date: 2022-08-11
+ * License: MIT
+ *
+ * Description:
+ * This is an implementation for an auto-resized array.
+ */
 
 #include <stdlib.h>
 
@@ -47,7 +55,7 @@ void vec_cleanup(vec_t **vec)
 		}                                                                                          \
 	})
 
-int vec_FWD_back(vec_t *vec, const void *data)
+int vec_push_back(vec_t *vec, const void *data)
 {
 	_upsize_check();
 	memcpy(vec->data + vec->elm_size * vec->size, data, vec->elm_size);
@@ -117,4 +125,16 @@ int vec_foreach(vec_t *vec,
 		}
 	}
 	return 1;
+}
+
+void *vec_take_data(vec_t *vec, size_t *size, size_t *capacity)
+{
+	void *data = vec->data;
+	if (size) {
+		*size = vec->size;
+	}
+	if (capacity) {
+		*capacity = vec->capacity;
+	}
+	free(vec);
 }
