@@ -32,7 +32,7 @@ struct eh_hook_s
 	eh_hook_ft ops[EH_OPS_MAX];
 };
 
-static int _eh_op_to_epoll_define(eh_ops_et op)
+static int _eh_op_to_epoll_define(const eh_ops_et op)
 {
 	if (op == EH_OPS_IN) {
 		return EPOLLIN;
@@ -58,7 +58,7 @@ static int _eh_op_to_epoll_define(eh_ops_et op)
 	return 0;
 }
 
-static uint32_t _get_epoll_flags(const eh_hook_st *hook, eh_ops_et new_op)
+static uint32_t _get_epoll_flags(const eh_hook_st *hook, const eh_ops_et new_op)
 {
 	uint32_t flags = 0;
 	size_t i;
@@ -70,7 +70,7 @@ static uint32_t _get_epoll_flags(const eh_hook_st *hook, eh_ops_et new_op)
 	return flags;
 }
 
-int eh_ctx_alloc(eh_ctx_st **dst, bool threaded, bool oneshot)
+int eh_ctx_alloc(eh_ctx_st **const dst, const bool threaded, const bool oneshot)
 {
 	CLEANUP(eh_ctx_cleanup) eh_ctx_st *tmp = calloc(1, sizeof(*tmp));
 	ES_NEW_ASRT_NM(tmp);
@@ -82,7 +82,7 @@ int eh_ctx_alloc(eh_ctx_st **dst, bool threaded, bool oneshot)
 	return 0;
 }
 
-void _cleanup_epoll_event(struct epoll_event **evs)
+void _cleanup_epoll_event(struct epoll_event **const evs)
 {
 	if (*evs)
 		free(*evs);
@@ -90,7 +90,7 @@ void _cleanup_epoll_event(struct epoll_event **evs)
 	*evs = NULL;
 }
 
-int eh_ctx_wait(eh_ctx_st *ctx, size_t max_events, int ms)
+int eh_ctx_wait(eh_ctx_st *const ctx, const size_t max_events, const int ms)
 {
 	int n_ev;
 	int i;
@@ -145,7 +145,7 @@ int eh_ctx_wait(eh_ctx_st *ctx, size_t max_events, int ms)
 	return n_ev;
 }
 
-int eh_ctx_reg_hook(eh_ctx_st *ctx, eh_hook_st *hook)
+int eh_ctx_reg_hook(eh_ctx_st *const ctx, eh_hook_st *const hook)
 {
 	struct epoll_event to_add = {};
 	ES_NEW_ASRT_NM(ctx);
@@ -165,7 +165,7 @@ int eh_ctx_reg_hook(eh_ctx_st *ctx, eh_hook_st *hook)
 	return 0;
 }
 
-void eh_ctx_unreg_hook(eh_ctx_st *ctx, eh_hook_st *hook)
+void eh_ctx_unreg_hook(eh_ctx_st *const ctx, eh_hook_st *const hook)
 {
 	if (!ctx || !hook || ctx != hook->owner) {
 		return;
@@ -178,13 +178,16 @@ void eh_ctx_unreg_hook(eh_ctx_st *ctx, eh_hook_st *hook)
 	ht_int_delete(ctx->hooks, hook->fd);
 }
 
-int _ctx_cleanup_foreach(UNUSED const ht_st *ht, UNUSED void *key, void *value, UNUSED void *data)
+static int _ctx_cleanup_foreach(UNUSED const ht_st *ht,
+                                UNUSED void *key,
+                                void *value,
+                                UNUSED void *data)
 {
 	eh_hook_cleanup((eh_hook_st **) &value);
 	return 1;
 }
 
-void eh_ctx_cleanup(eh_ctx_st **dst)
+void eh_ctx_cleanup(eh_ctx_st **const dst)
 {
 	if (!*dst) {
 		return;
@@ -200,7 +203,10 @@ void eh_ctx_cleanup(eh_ctx_st **dst)
 	*dst = NULL;
 }
 
-int eh_ctx_hook_alloc(eh_ctx_st *ctx, int fd, void *data, const struct eh_ops_mapping_s ops[])
+int eh_ctx_hook_alloc(eh_ctx_st *const ctx,
+                      const int fd,
+                      void *const data,
+                      const eh_hook_ft (*ops)[EH_OPS_MAX])
 {
 	CLEANUP(eh_hook_cleanup) eh_hook_st *hook = NULL;
 	ES_NEW_ASRT_NM(ctx);
@@ -210,7 +216,10 @@ int eh_ctx_hook_alloc(eh_ctx_st *ctx, int fd, void *data, const struct eh_ops_ma
 	return 0;
 }
 
-int eh_hook_alloc(eh_hook_st **dst, int fd, void *data, const struct eh_ops_mapping_s ops[])
+int eh_hook_alloc(eh_hook_st **const dst,
+                  const int fd,
+                  void *const data,
+                  const eh_hook_ft (*ops)[EH_OPS_MAX])
 {
 	size_t i                                 = 0;
 	CLEANUP(eh_hook_cleanup) eh_hook_st *tmp = calloc(1, sizeof(eh_hook_st));
@@ -218,31 +227,32 @@ int eh_hook_alloc(eh_hook_st **dst, int fd, void *data, const struct eh_ops_mapp
 	ES_NEW_INT_NM(fd);
 	tmp->fd   = fd;
 	tmp->data = data;
-	while (ops[i].op != EH_OPS_END) {
-		tmp->ops[ops[i].op] = ops[i].fn;
-		i++;
+	for (i = 0; i < ARRAY_SIZE(*ops); i++) {
+		tmp->ops[i] = (*ops)[i];
 	}
 	*dst = MOVE_PZ(tmp);
 	return 0;
 }
 
-int eh_hook_mod_set_cbf(eh_hook_st *hook, eh_ops_et op, eh_hook_ft fn)
+int eh_hook_mod_set_cbf(eh_hook_st *const hook, const eh_ops_et op, eh_hook_ft const fn)
 {
-	struct epoll_event ev = {};
 	ES_NEW_ASRT_NM(hook);
 	ES_NEW_ASRT_NM(hook->owner);
 	ES_NEW_ASRT_NM(op >= 0 && op < EH_OPS_MAX);
 	if (hook->ops[op] == fn) {
 		return 0;
 	}
-	ev.data.ptr = hook;
-	ev.events   = _get_epoll_flags(hook, op);
-	ES_NEW_INT_ERRNO(epoll_ctl(hook->owner->epoll_fd, EPOLL_CTL_MOD, hook->fd, &ev));
+	if (_get_epoll_flags(hook, op) != _get_epoll_flags(hook, EH_OPS_END)) {
+		struct epoll_event ev = {};
+		ev.data.ptr           = hook;
+		ev.events             = _get_epoll_flags(hook, op);
+		ES_NEW_INT_ERRNO(epoll_ctl(hook->owner->epoll_fd, EPOLL_CTL_MOD, hook->fd, &ev));
+	}
 	hook->ops[op] = fn;
 	return 1;
 }
 
-void eh_hook_set_data(eh_hook_st *hook, void *data)
+void eh_hook_set_data(eh_hook_st *const hook, void *const data)
 {
 	if (hook->data == data) {
 		return;
@@ -250,17 +260,25 @@ void eh_hook_set_data(eh_hook_st *hook, void *data)
 	hook->data = data;
 }
 
-void *eh_hook_get_data(eh_hook_st *hook)
+void *eh_hook_get_data(const eh_hook_st *const hook)
 {
 	return hook->data;
 }
 
-int eh_hook_get_fd(eh_hook_st *hook)
+int eh_hook_get_fd(const eh_hook_st *const hook)
 {
 	return hook->fd;
 }
 
-void eh_hook_cleanup(eh_hook_st **dst)
+void eh_hook_get_ops(const eh_hook_st *const hook, eh_hook_ft (*const dst)[EH_OPS_MAX])
+{
+	size_t i;
+	for (i = 0; i < ARRAY_SIZE(*dst); i++) {
+		(*dst)[i] = hook->ops[i];
+	}
+}
+
+void eh_hook_cleanup(eh_hook_st **const dst)
 {
 	if (!*dst) {
 		return;

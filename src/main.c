@@ -98,14 +98,8 @@ static int _pipeline(int argc, char **argv)
 	ES_FWD_INT(eh_ctx_hook_alloc(state.epoll_ctx,
 	                             0,
 	                             NULL,
-	                             (eh_ops_mapping_st[]){
-	                                 {
-	                                     .fn = _on_stdin,
-	                                     .op = EH_OPS_ALL,
-	                                 },
-	                                 {
-	                                     .op = EH_OPS_END,
-	                                 },
+	                             &(eh_hook_ft[]){
+	                                 [EH_OPS_ALL] = _on_stdin,
 	                             }),
 	           "Failed to make stdin hook");
 	ES_FWD_INT(_event_loop(&state, &args), "Failure in event loop.");

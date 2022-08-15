@@ -12,7 +12,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0]))
+#define ARRAY_SIZE(array) ({ (sizeof(array) / sizeof((array)[0])); })
 #define STRLCPY(dst, src) strlcpy(dst, src, ARRAY_SIZE(dst))
 #define BIG_BUF_SZ        (256)
 #define MID_BUF_SZ        (128)
