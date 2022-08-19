@@ -1,20 +1,15 @@
 CC=gcc
-LN=ln
 INCLUDES= -I ./src/global
-CFLAGS = -Werror -Wextra -Wall -MD -g -O0 -ansi
+CFLAGS = -Werror -Wextra -Wall -MD
 LFLAGS = -lutil -ldl -lc -lbsd
-EXE_NAME = ./bin/PROJECT_NAME
+EXE_NAME = PROJECT_NAME
+EXE_NAME := ./bin/$(EXE_NAME)
 SRC := $(shell find src/ -type f -regex ".*\.c")
 OBJ = $(patsubst %.c,%.o,$(patsubst src/%,obj/%,$(SRC))) # src/main.c -> obj/main.c -> obj/main.o
 
-.PHONY: debug ansi c99
-debug: CFLAGS += -g -O
-
-ansi: CFLAGS += -ansi
-	\
-
-c99: CFLAGS += -std=c99
-	\
+.PHONY: debug
+debug: CFLAGS += -g -O0
+debug: all
 
 .PHONY: all
 all: $(EXE_NAME)

@@ -87,6 +87,7 @@ static int _pipeline(int argc, char **argv)
 	puts("starting pipeline");
 	struct arg_spec_s args                            = {};
 	CLEANUP(_state_cleanup) struct prog_state_s state = {};
+
 	ES_FWD_INT(process_args(&args, argc, argv), "Failed to process args.");
 	ES_FWD_INT(eh_ctx_alloc(&state.epoll_ctx, false, false),
 	           "Failed to allocate new epoll context");
