@@ -12,11 +12,15 @@ create a new C project on Linux.
 - Argument parsing boiler-plate
   - Powered by GNU Argp
   - Example given with easy to start structure
-- Multiple error handling compatible datastructures
+- Multiple datastructures (all compatible with error handling boiler-plate)
   - Hashtable
-    - Simple access for string and int types
-    - User controllable data ownership
+    - Existing macros for string and int typed keys
+      - Predefined hashing functions
+      - Easy to use
+    - User controllable data ownership (hash table can allocate data, move data, free data, or do nothing depending on settings used)
   - Vector
+    - Contiguous data segment
+    - Support for `push_back`, `emplace_back`, and `take_data` (for freeing all but the underlying data array)
 - Clang format present
 - Tested on GCC 9.4.0
 - ANSI flag compatible
