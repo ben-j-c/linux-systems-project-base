@@ -46,9 +46,7 @@ git remote set-url origin git@github.com:your-username/your-repo
 git push
 ```
 4. Install `libbsd-dev` for `bsd/string.h`
-5. Strip out sections that are not needed from main.c
-
 ```
 sudo apt install libbsd-dev
 ```
-1. Run `make all` or `make debug` for release and debug images respectively
+5. Run `make all` or `make debug` for release and debug images respectively
