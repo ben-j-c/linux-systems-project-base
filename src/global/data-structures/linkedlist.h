@@ -12,6 +12,10 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#define LL_FOREACH(ll, iter) for (iter = ll->next; iter != ll; iter = iter->next)
+
+#define LL_FOREACH_REVERSE(ll, iter) for (iter = ll->prev; iter != ll; iter = iter->prev)
+
 struct llist_s;
 /**
  * @brief This struct should be embedded into your struct.
