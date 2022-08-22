@@ -12,14 +12,16 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+struct llist_s;
 /**
  * @brief This struct should be embedded into your struct.
  */
-typedef struct llist_s
+typedef struct llist_s llist_st;
+struct llist_s
 {
 	llist_st *next;
 	llist_st *prev;
-} llist_st;
+};
 
 /**
  * @brief Initialize a linked list header node. A header node is optional, though foreach and

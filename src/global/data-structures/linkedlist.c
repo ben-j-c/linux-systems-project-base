@@ -29,7 +29,7 @@ void ll_push_back(llist_st *dst, llist_st *src)
 void ll_push_front(llist_st **dst, llist_st *src)
 {
 	llist_st *new_dst_prev = src->prev;
-	src->prev->next        = dst;
+	src->prev->next        = *dst;
 	(*dst)->prev->next     = src;
 	src->prev              = (*dst)->prev;
 	(*dst)->prev           = new_dst_prev;
