@@ -2,7 +2,7 @@
 /**
  * @file linkedlist.h
  * @author Benjamin Correia (ben-j-c@github)
- * @brief A simple doubly linked list
+ * @brief A simple doubly linked list. User always owns the data.
  * @version 0.1
  * @date 2022-08-21
  *
@@ -28,13 +28,21 @@ struct llist_s
 };
 
 /**
- * @brief Initialize a linked list header node. A header node is optional, though foreach and
+ * @brief Initialize a linked list (header) node. A header node is optional, though foreach and
  * foreach_reverse are implemented assuming that a header node exists. If you dont want a header
  * node, then still use this function, just when you create the first node.
  *
  * @param dst The node to initalize
  */
 void ll_init(llist_st *dst);
+
+/**
+ * @brief A call to ll_init on data, followed by a call to ll_push_back on the two arguments
+ *
+ * @param dst The dst in ll_push_back
+ * @param data The dst in ll_init, and src in ll_push_back
+ */
+void ll_emplace_back(llist_st *dst, void *data);
 
 /**
  * @brief For the given node, push src behind this node. In the case of the dst == header node, this

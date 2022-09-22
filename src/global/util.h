@@ -57,6 +57,13 @@
 		_y;                                                                                        \
 	})
 
+#define SWAP(X, Y)                                                                                 \
+	({                                                                                             \
+		__typeof__(X) _temp = X;                                                                   \
+		X                   = Y;                                                                   \
+		Y                   = _temp;                                                               \
+	})
+
 #ifdef __GNUC__
 #	define CLEANUP(X)  __attribute__((cleanup(X)))
 #	define CLEAN_FD    __attribute__((cleanup(cleanup_fd)))

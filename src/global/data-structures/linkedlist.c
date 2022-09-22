@@ -17,6 +17,12 @@ void ll_init(llist_st *dst)
 	dst->prev = dst;
 }
 
+void ll_emplace_back(llist_st *dst, void *data)
+{
+	ll_init(data);
+	ll_push_back(dst, data);
+}
+
 void ll_push_back(llist_st *dst, llist_st *src)
 {
 	llist_st *new_dst_prev = src->prev;
