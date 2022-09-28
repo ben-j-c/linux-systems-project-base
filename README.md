@@ -6,6 +6,9 @@ create a new C project on Linux.
 - No makefile modifications necessary for new .c/.h files and folders
   - Dependencies checked for incremental compilation
   - Project wide include directory available in `src/global`
+- Automated testing framework through makefile
+  - Just add a new `.c` file in `tests`
+  - Run `make tests` to run tests
 - Error handling boiler-plate
   - `FWD` for pushing additional errors to the existing error chain
   - `NEW` for creating a new error chain
@@ -21,6 +24,12 @@ create a new C project on Linux.
   - Vector
     - Contiguous data segment
     - Support for `push_back`, `emplace_back`, and `take_data` (for freeing all but the underlying data array)
+  - Doubly linked list
+    - Infallible add/remove/init
+    - Ergonomic iterator
+  - AVL tree
+    - Infallible add/remove/find
+    - Ergonomic iterator
 - Clang format present
 - Tested on GCC 9.4.0
 - ANSI flag compatible
@@ -30,9 +39,7 @@ create a new C project on Linux.
 - Shared memory tools
 - Memory backed files tools
 - IPC tools
-- More compatible datastructures
-  - Linked lists
-  - Trees
+- More tests
 
 # How To Use
 
@@ -53,4 +60,4 @@ git push
 ```
 sudo apt install libbsd-dev
 ```
-5. Run `make all` or `make debug` for release and debug images respectively
+5. Run `make executable`, `make tests`, or `make all` to build the project executalbe, run the tests, or do both. To build with optimizations and without debug symbols use `make ... RELEASE=1`
