@@ -16,6 +16,7 @@ ERROR_STACK_BUFFER_BACKED := 0
 
 ifeq ($(RELEASE), 1)
 	DEBUG := 0
+	CFLAGS += -O2
 endif
 
 ifeq ($(DEBUG), 1)
