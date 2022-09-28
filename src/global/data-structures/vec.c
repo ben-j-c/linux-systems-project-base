@@ -127,15 +127,17 @@ int vec_foreach(vec_t *vec,
 	return 1;
 }
 
-void *vec_take_data(vec_t *vec, size_t *size, size_t *capacity)
+void *vec_take_data(vec_t **vec, size_t *size, size_t *capacity)
 {
-	void *data = vec->data;
+	void *data = (*vec)->data;
 	if (size) {
-		*size = vec->size;
+		*size = (*vec)->size;
 	}
 	if (capacity) {
-		*capacity = vec->capacity;
+		*capacity = (*vec)->capacity;
 	}
-	free(vec);
+	free((*vec));
+	(*vec)->data = NULL;
+	*vec         = NULL;
 	return data;
 }

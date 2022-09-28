@@ -29,4 +29,4 @@ size_t vec_size(vec_t *vec);
 int vec_foreach(vec_t *vec,
                 void *arg_vp,
                 int (*each)(const vec_t *vec, size_t idx, void *data, void *arg_vp));
-void *vec_take_data(vec_t *vec, size_t *size, size_t *capacity);
+void *vec_take_data(vec_t **vec, size_t *size, size_t *capacity);

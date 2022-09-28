@@ -163,7 +163,8 @@ static void _cleanup_node_value(_node_t **tmp)
 
 static void _cleanup_node_util(_node_t **tmp, bool skip_value)
 {
-	if (!*tmp)
+	_node_t *to_del = *tmp;
+	if (*tmp == NULL)
 		return;
 
 	_cleanup_node_key(tmp);
@@ -172,7 +173,8 @@ static void _cleanup_node_util(_node_t **tmp, bool skip_value)
 	}
 
 	(*tmp)->owner->n_nodes--;
-	free(*tmp);
+	*tmp = (*tmp)->next;
+	free(to_del);
 }
 
 static void _cleanup_node(_node_t **tmp)
@@ -314,7 +316,19 @@ void **ht_emplace(ht_st *ht, void *key)
 	return &(*head)->value;
 }
 
-void *ht_get(ht_st *ht, void *key)
+bool ht_has(ht_st *ht, const void *key)
+{
+	size_t hash;
+	_node_t **head = NULL;
+	hash           = ht->hash(key) % _primes[ht->buckets];
+	head           = &(ht->nodes[hash]);
+	while (*head && ht->cmp((*head)->key, key)) {
+		head = &((*head)->next);
+	}
+	return !!*head;
+}
+
+void *ht_get(ht_st *ht, const void *key)
 {
 	size_t hash;
 	_node_t **head = NULL;
@@ -346,7 +360,6 @@ void ht_delete(ht_st *ht, void *key)
 {
 	_node_t **head = _find_node(ht, key);
 	if (*head) {
-		*head = (*head)->next;
 		_cleanup_node(head);
 		_adjust_by_density(ht);
 	}
@@ -392,7 +405,7 @@ double ht_density(ht_st *ht)
 	return (double) ht->n_nodes / _primes[ht->buckets];
 }
 
-size_t ht_int_hash(void *key)
+size_t ht_int_hash(const void *key)
 {
 	uint64_t x = (uint64_t) key;
 	x          = (x ^ (x >> 31) ^ (x >> 62)) * UINT64_C(0x319642b2d24d8ec3);
@@ -401,15 +414,16 @@ size_t ht_int_hash(void *key)
 	return x;
 }
 
-int64_t ht_int_cmp(void *key1, void *key2)
+int64_t ht_int_cmp(const void *key1, const void *key2)
 {
 	return key2 - key1;
 }
 
-size_t ht_str_hash(const char *key)
+size_t ht_str_hash(const void *k)
 {
 	uint64_t hash = 5381UL;
 	int c;
+	const char *key = k;
 
 	while ((c = *key++))
 		hash = ((hash << 5) + hash) + c;
@@ -417,8 +431,9 @@ size_t ht_str_hash(const char *key)
 	return hash;
 }
 
-int64_t ht_str_cmp(const char *key1, const char *key2)
+int64_t ht_str_cmp(const void *k1, const void *k2)
 {
+	const char *key1 = k1, *key2 = k2;
 	return strcmp(key1, key2);
 }
 

@@ -1,4 +1,5 @@
 
+obj_tests/**
 obj/**
 .vscode/**
 bin/**

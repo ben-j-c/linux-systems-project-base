@@ -12,9 +12,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#define LL_FOREACH(ll, iter) for (iter = ll->next; iter != ll; iter = iter->next)
+#define LL_FOREACH(ll_p, iter) for (iter = (ll_p)->next; iter != (ll_p); iter = iter->next)
 
-#define LL_FOREACH_REVERSE(ll, iter) for (iter = ll->prev; iter != ll; iter = iter->prev)
+#define LL_FOREACH_REVERSE(ll_p, iter) for (iter = (ll_p)->prev; iter != (ll_p); iter = iter->prev)
 
 struct llist_s;
 /**

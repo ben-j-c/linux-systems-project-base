@@ -18,7 +18,9 @@
 
 #include "util.h"
 
-#ifndef ES_BUFFER_BACKED
+#ifdef ES_NO_DEBUG
+
+#elif !defined(ES_BUFFER_BACKED)
 __thread ssize_t es_bytes = 0;
 __thread int es_fd        = -1;
 #else
@@ -32,7 +34,19 @@ __thread char *es_start               = NULL;
 #	endif
 #endif
 
-#ifndef ES_BUFFER_BACKED
+#ifdef ES_NO_DEBUG
+
+void es_reset(void)
+{
+	;
+}
+
+void es_print(void)
+{
+	printf("Error traces disabled at compile time. This should not be seen\n");
+}
+
+#elif !defined(ES_BUFFER_BACKED)
 static void _append(const char *format, va_list args)
 {
 	int n_bytes = 0;
@@ -69,6 +83,7 @@ void es_print(void)
 {
 	char buff[1 << 10];
 	ssize_t ret;
+	fflush(stdout);
 	lseek(es_fd, 0, SEEK_SET);
 	while (es_bytes > 0) {
 		const ssize_t expected = MIN((ssize_t) sizeof(buff), es_bytes);
@@ -96,6 +111,7 @@ again3:
 	}
 	return;
 }
+
 #else
 
 static void _append(const char *format, va_list args)
@@ -125,6 +141,15 @@ void es_print(void)
 }
 #endif
 
+#ifdef ES_NO_DEBUG
+
+void es_append(UNUSED const char *format, ...)
+{
+	;
+}
+
+#else
+
 void es_append(const char *format, ...)
 {
 	va_list args;
@@ -132,3 +157,5 @@ void es_append(const char *format, ...)
 	_append(format, args);
 	va_end(args);
 }
+
+#endif
