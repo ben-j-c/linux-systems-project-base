@@ -1,6 +1,6 @@
 # Purpose
 The purpose of this project is to provide the base set of useful tools when
-create a new C project on Linux.
+creating a new C project on Linux.
 
 # Features
 - No makefile modifications necessary for new .c/.h files and folders
@@ -9,9 +9,12 @@ create a new C project on Linux.
 - Automated testing framework through makefile
   - Just add a new `.c` file in `tests`
   - Run `make tests` to run tests
-- Error handling boiler-plate
+- Error handling boiler-plate useful for printing sequences of errors, simplifying control flow, and documenting code
+  - Powerful when using cleanup functions
   - `FWD` for pushing additional errors to the existing error chain
-  - `NEW` for creating a new error chain
+  - `NEW` for creating a new error chain (e.g., `ES_NEW_ERRNO(read(...), "read failed")` on error will add the string to the error stack along with errno and it's meaning and then return from the current function with the error from `read`)
+  - Support `errno`
+  - Configurable through defines (enable/disable, filebacked/buffer backed)
 - Argument parsing boiler-plate
   - Powered by GNU Argp
   - Example given with easy to start structure
