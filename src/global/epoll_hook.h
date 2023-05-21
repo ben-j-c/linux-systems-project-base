@@ -16,7 +16,16 @@
 #include <stdint.h>
 #include <sys/epoll.h>
 
+/**
+ * @brief An opaque type for holding epoll information. Holds a table of all the hooks associated
+ * with an epoll context
+ */
 typedef struct eh_ctx_s eh_ctx_st;
+/**
+ * @brief An opaque type for holding information regarding a set of hooks for an fd. Holds the
+ * underlying fd, the list of hook functions, and any arbitrary user data given during registration.
+ *
+ */
 typedef struct eh_hook_s eh_hook_st;
 
 typedef enum eh_ops_e
@@ -32,6 +41,11 @@ typedef enum eh_ops_e
 	EH_OPS_MAX,
 } eh_ops_et;
 
+/**
+ * @brief An epoll hook. Called in order defined by enum eh_ops_e.
+ * @returns status, <0: error and abort, 0: dont process other ops for this event, >0:
+ * process rest of hooks.
+ */
 typedef int (*eh_hook_ft)(eh_ctx_st *ctx, eh_hook_st *hook, bool ops[EH_OPS_MAX]);
 
 /**
@@ -45,7 +59,8 @@ typedef int (*eh_hook_ft)(eh_ctx_st *ctx, eh_hook_st *hook, bool ops[EH_OPS_MAX]
  */
 int eh_ctx_alloc(eh_ctx_st **dst, bool threaded, bool oneshot);
 /**
- * @brief Handle up to max_events, calling associated registered hooks.
+ * @brief Handle up to max_events, calling associated registered hooks. First calls ALL hook, then
+ * in the order of IN, OUT, RD_HUP, EXCEPTIONAL, ERR, HUP.
  *
  * @param ctx Working context
  * @param max_events Passed through to epoll_wait, and allocates this many epoll_events

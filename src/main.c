@@ -62,13 +62,19 @@ int _some_fun(void)
 	return 1;
 }
 
-static int _on_stdin(UNUSED eh_ctx_st *ctx, eh_hook_st *hook, UNUSED bool ops[EH_OPS_MAX])
+/**
+ * @brief Example hook function that processes epoll events on stdin. Takes entire input and echos
+ * it back, simulates an error and catches it, and continues.
+ */
+static int _on_stdin(UNUSED eh_ctx_st *ctx, eh_hook_st *hook, bool ops[EH_OPS_MAX])
 {
 	ssize_t n_read        = 0;
 	char buff[BIG_BUF_SZ] = {};
+	// We only care about in events
 	if (!ops[EH_OPS_IN]) {
 		return 1;
 	}
+	// Read all data available, or until we would block
 	while ((n_read = read(eh_hook_get_fd(hook), buff, sizeof(buff))) > 0) {
 		buff[n_read] = '\0';
 		printf("Got values: %s\n", buff);
@@ -91,18 +97,22 @@ static int _pipeline(int argc, char **argv)
 	ES_FWD_INT(process_args(&args, argc, argv), "Failed to process args.");
 	ES_FWD_INT(eh_ctx_alloc(&state.epoll_ctx, false, false),
 	           "Failed to allocate new epoll context");
+	// Make stdin non-blocking
 	ES_NEW_INT_ERRNO(
 	    fcntl(STDIN_FILENO, F_SETFD, ES_NEW_INT_ERRNO(fcntl(STDIN_FILENO, F_GETFD) | O_NONBLOCK)));
+	// Make stdout non-blocking
 	ES_NEW_INT_ERRNO(fcntl(STDOUT_FILENO,
 	                       F_SETFD,
 	                       ES_NEW_INT_ERRNO(fcntl(STDOUT_FILENO, F_GETFD) | O_NONBLOCK)));
+	// Hook all epoll events to _on_stdin
 	ES_FWD_INT(eh_ctx_hook_alloc(state.epoll_ctx,
-	                             0,
+	                             STDIN_FILENO,
 	                             NULL,
 	                             &(eh_hook_ft[]){
 	                                 [EH_OPS_ALL] = _on_stdin,
 	                             }),
 	           "Failed to make stdin hook");
+	// Poll events
 	ES_FWD_INT(_event_loop(&state, &args), "Failure in event loop.");
 	return 0;
 }

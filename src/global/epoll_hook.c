@@ -97,7 +97,7 @@ int eh_ctx_wait(eh_ctx_st *const ctx, const size_t max_events, const int ms)
 	CLEANUP(_cleanup_epoll_event) struct epoll_event *evs = malloc(sizeof(*evs) * max_events);
 	ES_NEW_ASRT_NM(ctx);
 	ES_NEW_INT_NM(ctx->epoll_fd);
-	ES_NEW_INT_ERRNO(n_ev = epoll_wait(ctx->epoll_fd, evs, 1, ms));
+	ES_NEW_INT_ERRNO(n_ev = epoll_wait(ctx->epoll_fd, evs, max_events, ms));
 	for (i = 0; i < n_ev; i++) {
 		bool new_events[EH_OPS_MAX] = {};
 		bool hangup                 = false;
