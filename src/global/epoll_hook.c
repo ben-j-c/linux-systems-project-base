@@ -120,7 +120,7 @@ int eh_ctx_wait(eh_ctx_st *const ctx, const size_t max_events, const int ms)
 				continue;
 			}
 		}
-		for (j = 0; j < EH_OPS_ALL; j++) {
+		for (j = 0; j < EH_OPS_HUP; j++) {
 			if (new_events[j] && hook->ops[j]) {
 				int ret;
 				ES_NEW_INT_NM(ret = hook->ops[j](ctx, hook, new_events));
@@ -133,6 +133,11 @@ int eh_ctx_wait(eh_ctx_st *const ctx, const size_t max_events, const int ms)
 		if (hangup) {
 			if (!ctx->oneshot) {
 				eh_ctx_unreg_hook(ctx, hook);
+				if (new_events[EH_OPS_HUP] && hook->ops[EH_OPS_HUP]) {
+					int ret;
+					ES_NEW_INT_NM(ret = hook->ops[EH_OPS_HUP](ctx, hook, new_events));
+				}
+				eh_hook_cleanup(&hook);
 			}
 		} else if (ctx->oneshot) {
 			struct epoll_event nev = {};

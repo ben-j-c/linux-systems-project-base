@@ -60,7 +60,9 @@ typedef int (*eh_hook_ft)(eh_ctx_st *ctx, eh_hook_st *hook, bool ops[EH_OPS_MAX]
 int eh_ctx_alloc(eh_ctx_st **dst, bool threaded, bool oneshot);
 /**
  * @brief Handle up to max_events, calling associated registered hooks. First calls ALL hook, then
- * in the order of IN, OUT, RD_HUP, EXCEPTIONAL, ERR, HUP.
+ * in the order of IN, OUT, RD_HUP, EXCEPTIONAL, ERR, HUP. If hangup is called then the hook is
+ * deregistered. On hangup the hook is cleaned up, meaning any user data stored in the hook will be
+ * lost.
  *
  * @param ctx Working context
  * @param max_events Passed through to epoll_wait, and allocates this many epoll_events
